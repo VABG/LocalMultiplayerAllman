@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
 {
+    [SerializeField] int team;
     // Input
     [SerializeField] KeyCode keyLeft;
     [SerializeField] KeyCode keyRight;
@@ -14,7 +15,8 @@ public class Player : MonoBehaviour
 
     [SerializeField] float moveSpeed = 5.0f;
     [SerializeField] float moveLerpSpeed = 20;
-    [SerializeField] float health;
+    [SerializeField] float maxHealth;
+    float health;
 
     // Leg animators
     [SerializeField] LegWalk leg1;
@@ -25,18 +27,24 @@ public class Player : MonoBehaviour
 
     [SerializeField] GameObject interactTrigger;
 
+    [SerializeField] GameObject shot;
+    Vector3 startPosition;
+    Quaternion startRotation;
 
     Rigidbody rb;
     bool onGround = false;
     
     // Holds input info for update in FixedUpdate
     Vector3 lastInput;
-
+    bool dead = false;
     Quaternion targetRotation;
 
     // Start is called before the first frame update
     void Start()
     {
+        health = maxHealth;
+        startRotation = transform.rotation;
+        startPosition = transform.position;
         rb = GetComponent<Rigidbody>();
         targetRotation = transform.rotation;
     }
@@ -44,6 +52,7 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (dead) return;
         lastInput = Vector3.zero;
 
         if (Input.GetKey(keyLeft)) lastInput += Vector3.left;
@@ -56,15 +65,23 @@ public class Player : MonoBehaviour
         if (lastInput.magnitude > 0) targetRotation = Quaternion.LookRotation(lastInput, Vector3.up);
 
         // Activate and deactivate interaction trigger GameObject with key press/release
-        if (Input.GetKeyDown(keyAction)) interactTrigger.SetActive(true);
-        if (Input.GetKeyUp(keyAction)) interactTrigger.SetActive(false);
+        //if (Input.GetKeyDown(keyAction)) interactTrigger.SetActive(true);
+        //if (Input.GetKeyUp(keyAction)) interactTrigger.SetActive(false);
+
+        if (Input.GetKeyDown(keyAction)) Shoot();
 
         // Interpolate rotation for prettier visuals
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * moveLerpSpeed);
     }
 
+    private void Shoot()
+    {
+        Instantiate(shot, transform.position + transform.forward, transform.rotation);
+    }
+
     private void FixedUpdate()
     {
+        if (dead) return;
         // Groundcheck
         if (Physics.Raycast(new Ray(transform.position, Vector3.down), out RaycastHit hit, raycastLength, raycastLayerMask))
         {
@@ -93,13 +110,22 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        if (dead) return;
         health -= damage;
         if (health <= 0) Die();
     }
     
     void Die()
     {
-        // Disables Player Script
-        enabled = false;
+        dead = true;
+        FindObjectOfType<FootballManager>().AddScore(team == 1 ? 2 : 1);
+    }
+
+    public void Reset()
+    {
+        transform.position = startPosition;
+        transform.rotation = startRotation;
+        health = maxHealth;
+        dead = false;
     }
 }

@@ -1068,13 +1068,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26750b443df429e4597804409990450b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  team: 0
   keyLeft: 97
   keyRight: 100
   keyUp: 119
   keyDown: 115
-  keyAction: 118
+  keyAction: 304
   moveSpeed: 10
   moveLerpSpeed: 20
+  maxHealth: 100
   leg1: {fileID: 7960501701797128205}
   leg2: {fileID: 7960501702304098585}
   raycastLayerMask:
@@ -1082,7 +1084,7 @@ MonoBehaviour:
     m_Bits: 64
   raycastLength: 1.1
   interactTrigger: {fileID: 2360743407847265295}
-  health: 100
+  shot: {fileID: 2179298229343999593, guid: a52b2f7e2ab572845b82fc3fb8e8abf9, type: 3}
 --- !u!82 &2035266940
 AudioSource:
   m_ObjectHideFlags: 0

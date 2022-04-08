@@ -15,7 +15,6 @@ public class FootballManager : MonoBehaviour
     bool justScored = false;
     bool gameOver = false;
 
-    GameObject ball;
     [SerializeField] float breakAfterScore = 2.0f;
     [SerializeField] FootballUI ui;
     float timer = 0;
@@ -68,12 +67,25 @@ public class FootballManager : MonoBehaviour
             if (timer <= 0)
             {
                 // Reset ball position
-                ball.transform.position = new Vector3(0, .5f, 0);
                 justScored = false;
                 timer = breakAfterScore;
-                ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
+                Ball[] balls = FindObjectsOfType<Ball>();
+                for (int i = 0; i < balls.Length; i++)
+                {
+                    balls[i].transform.position = new Vector3(0, .5f + i, 0);
+                    balls[i].GetComponent<Rigidbody>().velocity = Vector3.zero;
+                }
                 respawnPFX.Play();
                 respawnSound.Play();
+
+                // Find players and reset
+                Player[] players = FindObjectsOfType<Player>();
+                for (int i = 0; i < players.Length; i++)
+                {
+                    players[i].Reset();
+                }
+                FindObjectOfType<DoorActivator>().Reset();
             }
         }
     }
@@ -96,7 +108,7 @@ public class FootballManager : MonoBehaviour
         }
     }
 
-    public void AddScore(int team, GameObject ball)
+    public void AddScore(int team, GameObject ball = null)
     {
         // Stops scoring from happening again before ball respawns
         if (justScored) return;
@@ -109,8 +121,6 @@ public class FootballManager : MonoBehaviour
         {
             Debug.Log("Then who was score!?"); 
         }
-        this.ball = ball; // Get ball
-        ball.GetComponent<Rigidbody>().velocity *= .25f; // Lower speed
         
         ui.UpdateScores(team1Score, team2Score);
         
@@ -119,5 +129,8 @@ public class FootballManager : MonoBehaviour
         // Play sound and particle effects
         goalSound.Play();
         goalPFX.Play();
+
+        if (ball == null) return;
+        ball.GetComponent<Rigidbody>().velocity *= .25f; // Lower speed
     }
 }
